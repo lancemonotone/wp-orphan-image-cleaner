@@ -1,0 +1,30 @@
+{
+  "name": "wp-orphan-image-cleaner",
+  "version": "1.0.0",
+  "description": "WordPress orphaned image sizes cleanup tool with backup and restore functionality",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js --help",
+    "scan": "node app.js --dry-run",
+    "clean": "node app.js --clean",
+    "clean:delete": "node app.js --clean --delete",
+    "restore": "node app.js --restore",
+    "restore:delete": "node app.js --restore --delete",
+    "test": "node tests/version.js && node tests/wp-version.js",
+    "test:sizes": "node tests/get-image-sizes.js"
+  },
+  "keywords": [
+    "wordpress",
+    "media",
+    "cleanup",
+    "orphaned",
+    "images",
+    "thumbnails"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "unzipper": "^0.12.3"
+  }
+}
