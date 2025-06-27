@@ -60,9 +60,16 @@ class OrphanedImageCleaner {
     this.shouldClean = args.includes("--clean");
     this.shouldRestore = args.includes("--restore");
     this.deleteBackups = args.includes("--delete");
-    this.restoreFile = this.shouldRestore
-      ? args[args.indexOf("--restore") + 1]
-      : null;
+
+    // Parse restore file (only if next arg exists and doesn't start with --)
+    this.restoreFile = null;
+    if (this.shouldRestore) {
+      const restoreIndex = args.indexOf("--restore");
+      const nextArg = args[restoreIndex + 1];
+      if (nextArg && !nextArg.startsWith("--")) {
+        this.restoreFile = nextArg;
+      }
+    }
   }
 
   /**
@@ -786,37 +793,25 @@ NOTES:
   }
 
   /**
-   * Find the latest backup file by looking at log files
+   * Find the latest backup ZIP file
    */
   async findLatestBackup() {
     try {
-      const logFiles = await fs.readdir(LOGS_DIR);
-      const backupLogs = logFiles
+      const uploadsFiles = await fs.readdir(UPLOADS_PATH);
+      const backupZips = uploadsFiles
         .filter(
-          (file) => file.startsWith(BACKUP_PREFIX) && file.endsWith(".csv")
+          (file) => file.startsWith(BACKUP_PREFIX) && file.endsWith(".zip")
         )
         .sort()
         .reverse(); // Most recent first
 
-      if (backupLogs.length === 0) {
+      if (backupZips.length === 0) {
         return null;
       }
 
-      // Extract timestamp from log file name and construct ZIP file name
-      const latestLog = backupLogs[0];
-      const zipFileName = latestLog.replace(".csv", ".zip");
-
-      // Check if the ZIP file actually exists
-      const zipPath = path.join(UPLOADS_PATH, zipFileName);
-      try {
-        await fs.access(zipPath);
-        return zipFileName;
-      } catch (error) {
-        console.warn(`⚠️  Log file found but ZIP file missing: ${zipFileName}`);
-        return null;
-      }
+      return backupZips[0]; // Return the most recent ZIP file
     } catch (error) {
-      console.warn(`⚠️  Could not read logs directory: ${error.message}`);
+      console.warn(`⚠️  Could not read uploads directory: ${error.message}`);
       return null;
     }
   }
